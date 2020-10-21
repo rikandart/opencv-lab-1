@@ -1,104 +1,22 @@
-// opencv lib
 #include <opencv2/core.hpp>
 #include <opencv2/imgcodecs.hpp>
 #include <opencv2/highgui.hpp>
 #include <opencv2/imgproc.hpp>
-
-// c++
 #include <iostream>
-#include <vector>
-#include <thread>
 #include <math.h>
 
 using namespace cv;
-bool incorrect = false;
 
-void show(const Mat& original, const Mat& edited, const Mat& hist_orig, const Mat& hist_edited, const int width, const int height) {
-	if (original.empty())
-		std::cout << "Could not open or find the image original" << std::endl;
-	if (edited.empty())
-		std::cout << "Could not open or find the image edited" << std::endl;
-	if (hist_orig.empty())
-		std::cout << "Could not open or find the image original hist" << std::endl;
-	if (hist_edited.empty())
-		std::cout << "Could not open or find the image edited hist" << std::endl;
-
-	// edited image and original image are the same size
-	// original
-	namedWindow("Grayed image", WINDOW_NORMAL | WINDOW_FREERATIO | WINDOW_GUI_EXPANDED);
-	namedWindow("Histogram original", WINDOW_NORMAL | WINDOW_FREERATIO | WINDOW_GUI_EXPANDED);
-	resizeWindow("Grayed image", width, height);
-	moveWindow("Grayed image", 520, 0);
-	resizeWindow("Histogram original", 512, 512);
-	moveWindow("Histogram original", 0, 0);
-
-	// edited
-	namedWindow("Quantized image", WINDOW_NORMAL | WINDOW_FREERATIO | WINDOW_GUI_EXPANDED);
-	namedWindow("Histogram edited", WINDOW_NORMAL | WINDOW_FREERATIO | WINDOW_GUI_EXPANDED);
-	resizeWindow("Quantized image", width, height);
-	moveWindow("Quantized image", 520, 554);
-	resizeWindow("Histogram edited", 512, 512);
-	moveWindow("Histogram edited", 0, 554);
-
-	imshow("Grayed image", original);
-	imshow("Quantized image", edited);
-	imshow("Histogram original", hist_orig);
-	imshow("Histogram edited", hist_edited);
-	waitKey(0);
-}
-
-double standartDeviation(const Mat& original, const Mat& edited) {
-	const unsigned m = original.rows, n = original.cols;
-	unsigned result = 0;
-	unsigned wh = 0, bl = 0;
-	for (int i = 0; i < m; i++)
-		for (int j = 0; j < n; j++)
-			result += pow(original.at<unsigned char>(i, j)
-				- edited.at<unsigned char>(i, j), 2);
-	return sqrt(result / (m * n));
-}
-
-void editQuantizeLevel(const unsigned level, const Mat& img, Mat& dest_img) {
-	if (remainder(256.0, level) != 0.0 || level == 0 || level == 1) {
-		std::cout << "Incorrect quantize level" << std::endl;
-		incorrect = true;
-		return;
-	}
-	incorrect = false;
-	// заполнение матрицы нулями
-	dest_img = Mat::zeros(img.rows, img.cols, CV_8U);
-	// шаг квантования
-	const double step = 255.0 / (level - 1);
-	// пробегаем по пикселям x и y
-	for (unsigned i = 0; i < img.cols; i++) {
-		for (unsigned j = 0; j < img.rows; j++) {
-			unsigned br = img.at<unsigned char>(j, i);
-			for (unsigned k = 0; k < level; k++) {
-				// смотрим в каком интервале лежит число
-				if (br >= k * step && br <= (k + 1) * step / 2) {
-					// смотрим, какая разница меньше и присваиваем нужную градацию
-					dest_img.at<unsigned char>(j, i) = k * step;
-					break;
-				}
-				else if (br >= k * step / 2 && br <= (k + 1) * step) {
-					dest_img.at<unsigned char>(j, i) = (k + 1) * step;
-					break;
-				}
-			}
-		}
-	}
-}
-
-Mat getHist(const Mat& image)
+Mat getHist(const Mat& img)
 {
 	// Создаем заполненный нулями Mat-контейнер размером 1 x 256
 	Mat hist = Mat::zeros(1, 256, CV_64FC1);
 
 	// последовательно считываем яркость каждого элемента изображения
 	// и увеличиваем на единицу значение соответствующего элемента матрицы hist
-	for (int i = 0; i < image.cols; i++)
-		for (int j = 0; j < image.rows; j++) {
-			int r = image.at<unsigned char>(j, i);
+	for (int i = 0; i < img.cols; i++)
+		for (int j = 0; j < img.rows; j++) {
+			int r = img.at<unsigned char>(j, i);
 			hist.at<double>(0, r) = hist.at<double>(0, r) + 1.0;
 		}
 
@@ -121,34 +39,56 @@ Mat getHist(const Mat& image)
 int main(int argc, char* argv[])
 {
 	setlocale(LC_ALL, "Russian");
-	Mat image, edited_img, hist_orig, hist_edited;
-	image = imread("E:\\Диск Работа\\2018 фото\\5 разное\\IMG_4432.JPG", IMREAD_GRAYSCALE); // Read the file
-	if (image.empty()) {
-		std::cout << "Could not open or find the image" << std::endl;
-	}
-	unsigned width = image.cols, height = image.rows;
-	if (image.cols * image.rows > 1024 * 1024) {
-		width /= 10;
-		height /= 10;
-	}
-	int level = 2;
-	while (true) {
-		std::cout << "Enter quantize level (-1 to exit): \n\t" << std::endl;
-		std::cin >> level;
-		system("cls");
-		if (level == -1)
-			break;
-		if (remainder(256.0, level) != 0.0 || level == 0) {
-			std::cout << "Incorrect quantize level" << std::endl;
-			continue;
+	Mat img;
+	Mat q_img;
+	Mat hist_orig;
+	Mat hist_q;
+	// вставь сюда путь к картинке и не забудь удалить этот комментарий
+	img = imread("E:\\Диск Работа\\2018 фото\\5 разное\\IMG_4432.JPG", IMREAD_GRAYSCALE);
+	int q_level = 0;
+	std::cout << "Введите число уровней квантования: ";
+	std::cin >> q_level;
+	std::cout << std::endl;
+	// квантование
+	q_img = Mat::zeros(img.rows, img.cols, CV_8U);
+	const double inter = 255.0 / (q_level - 1);
+	for (int i = 0; i < img.cols; i++) {
+		for (int j = 0; j < img.rows; j++) {
+			int br = img.at<unsigned char>(j, i);
+			for (int k = 0; k < q_level; k++) {
+				if (br >= k * inter && br <= (k + 1) * inter / 2) {
+					q_img.at<unsigned char>(j, i) = k * inter;
+					break;
+				}
+				else if (br >= k * inter / 2 && br <= (k + 1) * inter) {
+					q_img.at<unsigned char>(j, i) = (k + 1) * inter;
+					break;
+				}
+			}
 		}
-		editQuantizeLevel(level, image, edited_img);
-		if (!incorrect)
-			std::cout << "Quantize level: " << level << "\nStandart deviation: " << standartDeviation(image, edited_img) <<
-			"\nEstimated standart deviation: " << (255.0 / (level - 1)) / sqrt(12.0) << std::endl;
-		hist_orig = getHist(image);
-		hist_edited = getHist(edited_img);
-		std::thread(show, image, edited_img, hist_orig, hist_edited, width, height).detach();
 	}
+	// расчет ско
+	double sko = 0;
+	for (int i = 0; i < img.rows; i++) {
+		for (int j = 0; j < img.cols; j++) {
+			sko += pow(img.at<unsigned char>(i, j) - q_img.at<unsigned char>(i, j), 2);
+		}
+	}
+	sko = sqrt(1 / (img.rows * img.cols) * sko);
+
+	std::cout << "Уровни: " << q_level << "\nСКО: " << sko <<
+		"\nОценка: " << (255.0 / (q_level - 1)) / sqrt(12.0) << std::endl;
+
+	hist_orig = getHist(img);
+	hist_q = getHist(q_img);
+	namedWindow("Оригинал", WINDOW_NORMAL | WINDOW_FREERATIO | WINDOW_GUI_EXPANDED);
+	namedWindow("Гистограмма ригинал", WINDOW_NORMAL | WINDOW_FREERATIO | WINDOW_GUI_EXPANDED);
+	namedWindow("Квантованное изображение", WINDOW_NORMAL | WINDOW_FREERATIO | WINDOW_GUI_EXPANDED);
+	namedWindow("Гистограмма квантованного изображения", WINDOW_NORMAL | WINDOW_FREERATIO | WINDOW_GUI_EXPANDED);
+	imshow("Оригинал", img);
+	imshow("Квантованное изображение", q_img);
+	imshow("Гистограмма ригинал", hist_orig);
+	imshow("Гистограмма квантованного изображения", hist_q);
+	waitKey(0);
 	return 0;
 }

@@ -1,4 +1,6 @@
-﻿// opencv lib
+﻿#define MISHA
+#ifndef MISHA
+// opencv lib
 #include <opencv2/core.hpp>
 #include <opencv2/imgcodecs.hpp>
 #include <opencv2/highgui.hpp>
@@ -12,6 +14,7 @@
 
 using namespace cv;
 bool incorrect = false;
+
 
 void show(const Mat& original, const Mat& edited, const Mat& hist_orig, const Mat& hist_edited, const int width, const int height) {
 	if (original.empty()) 
@@ -152,3 +155,5 @@ int main(int argc, char* argv[])
 	}
     return 0;
 }
+#endif
+
