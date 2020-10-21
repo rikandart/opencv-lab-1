@@ -1,0 +1,12 @@
+!.gitignore
+!*.cpp
+!*.h
+!*.hpp
+!*.c
+/.vs
+/Debug
+/x64
+/opencv-lab-1.vcxproj.user
+/opencv-lab-1.vcxproj.filters
+/opencv-lab-1.vcxproj
+/opencv-lab-1.sln
