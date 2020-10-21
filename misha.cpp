@@ -9,11 +9,11 @@ using namespace cv;
 
 Mat getHist(const Mat& img)
 {
-	// Создаем заполненный нулями Mat-контейнер размером 1 x 256
+	// cРѕР·РґР°РµРј Р·Р°РїРѕР»РЅРµРЅРЅС‹Р№ РЅСѓР»СЏРјРё Mat-РєРѕРЅС‚РµР№РЅРµСЂ СЂР°Р·РјРµСЂРѕРј 1 x 256
 	Mat hist = Mat::zeros(1, 256, CV_64FC1);
 
-	// последовательно считываем яркость каждого элемента изображения
-	// и увеличиваем на единицу значение соответствующего элемента матрицы hist
+	// РїРѕСЃР»РµРґРѕРІР°С‚РµР»СЊРЅРѕ СЃС‡РёС‚С‹РІР°РµРј В¤СЂРєРѕСЃС‚СЊ РєР°Р¶РґРѕРіРѕ СЌР»РµРјРµРЅС‚Р° РёР·РѕР±СЂР°Р¶РµРЅРёСЏ
+	// Рё СѓРІРµР»РёС‡РёРІР°РµРј РЅР° РµРґРёРЅРёС†Сѓ Р·РЅР°С‡РµРЅРёРµ СЃРѕРѕС‚РІРµС‚СЃС‚РІСѓСЋС‰РµРіРѕ СЌР»РµРјРµРЅС‚Р° РјР°С‚СЂРёС†С‹ hist
 	for (int i = 0; i < img.cols; i++)
 		for (int j = 0; j < img.rows; j++) {
 			int r = img.at<unsigned char>(j, i);
@@ -21,8 +21,8 @@ Mat getHist(const Mat& img)
 		}
 
 	double m = 0, M = 0;
-	minMaxLoc(hist, &m, &M); // ищем глобальный минимум и максимум
-	hist = hist / M; // используем максимум для нормировки по высоте
+	minMaxLoc(hist, &m, &M); // РёС‰РµРј РіР»РѕР±Р°Р»СЊРЅС‹Р№ РјРёРЅРёРјСѓРј Рё РјР°РєСЃРёРјСѓРј
+	hist = hist / M; // РёСЃРїРѕР»СЊР·СѓРµРј РјР°РєСЃРёРјСѓРј РґР»В¤ РЅРѕСЂРјРёСЂРѕРІРєРё РїРѕ РІС‹СЃРѕС‚Рµ
 
 	Mat hist_img = Mat::zeros(100, 256, CV_8U);
 
@@ -32,7 +32,7 @@ Mat getHist(const Mat& img)
 				hist_img.at<unsigned char>(99 - j, i) = 255;
 			}
 		}
-	bitwise_not(hist_img, hist_img); // инвертируем изображение
+	bitwise_not(hist_img, hist_img); // РёРЅРІРµСЂС‚РёСЂСѓРµРј РёР·РѕР±СЂР°Р¶РµРЅРёРµ
 	return hist_img;
 }
 
@@ -43,13 +43,16 @@ int main(int argc, char* argv[])
 	Mat q_img;
 	Mat hist_orig;
 	Mat hist_q;
-	// вставь сюда путь к картинке и не забудь удалить этот комментарий
-	img = imread("E:\\Диск Работа\\2018 фото\\5 разное\\IMG_4432.JPG", IMREAD_GRAYSCALE);
+	/**
+		С‡РёС‚Р°Р№ РєРѕРјРјРµРЅС‚Р°СЂРёР№ РЅРёР¶Рµ
+	**/
+	// РІСЃС‚Р°РІСЊ СЃСЋРґР° РїСѓС‚СЊ Рє РєР°СЂС‚РёРЅРєРµ Рё РЅРµ Р·Р°Р±СѓРґСЊ СѓРґР°Р»РёС‚СЊ СЌС‚РѕС‚ РєРѕРјРјРµРЅС‚Р°СЂРёР№ Рё РІРµСЂС…РЅРёР№
+	img = imread("E:\\Ж’РёСЃРє вЂ“Р°Р±РѕС‚Р°\\2018 С„РѕС‚Рѕ\\5 СЂР°Р·РЅРѕРµ\\IMG_4432.JPG", IMREAD_GRAYSCALE);
 	int q_level = 0;
-	std::cout << "Введите число уровней квантования: ";
+	std::cout << "В¬РІРµРґРёС‚Рµ С‡РёСЃР»Рѕ СѓСЂРѕРІРЅРµР№ РєРІР°РЅС‚РѕРІР°РЅРёВ¤: ";
 	std::cin >> q_level;
 	std::cout << std::endl;
-	// квантование
+	// РєРІР°РЅС‚РѕРІР°РЅРёРµ
 	q_img = Mat::zeros(img.rows, img.cols, CV_8U);
 	const double inter = 255.0 / (q_level - 1);
 	for (int i = 0; i < img.cols; i++) {
@@ -67,7 +70,7 @@ int main(int argc, char* argv[])
 			}
 		}
 	}
-	// расчет ско
+	// СЂР°СЃС‡РµС‚ СЃРєРѕ
 	double sko = 0;
 	for (int i = 0; i < img.rows; i++) {
 		for (int j = 0; j < img.cols; j++) {
@@ -76,19 +79,19 @@ int main(int argc, char* argv[])
 	}
 	sko = sqrt(1 / (img.rows * img.cols) * sko);
 
-	std::cout << "Уровни: " << q_level << "\nСКО: " << sko <<
-		"\nОценка: " << (255.0 / (q_level - 1)) / sqrt(12.0) << std::endl;
+	std::cout << "вЂќСЂРѕРІРЅРё: " << q_level << "\nвЂ”В Сњ: " << sko <<
+		"\nСњС†РµРЅРєР°: " << (255.0 / (q_level - 1)) / sqrt(12.0) << std::endl;
 
 	hist_orig = getHist(img);
 	hist_q = getHist(q_img);
-	namedWindow("Оригинал", WINDOW_NORMAL | WINDOW_FREERATIO | WINDOW_GUI_EXPANDED);
-	namedWindow("Гистограмма ригинал", WINDOW_NORMAL | WINDOW_FREERATIO | WINDOW_GUI_EXPANDED);
-	namedWindow("Квантованное изображение", WINDOW_NORMAL | WINDOW_FREERATIO | WINDOW_GUI_EXPANDED);
-	namedWindow("Гистограмма квантованного изображения", WINDOW_NORMAL | WINDOW_FREERATIO | WINDOW_GUI_EXPANDED);
-	imshow("Оригинал", img);
-	imshow("Квантованное изображение", q_img);
-	imshow("Гистограмма ригинал", hist_orig);
-	imshow("Гистограмма квантованного изображения", hist_q);
+	namedWindow("СњСЂРёРіРёРЅР°Р»", WINDOW_NORMAL | WINDOW_FREERATIO | WINDOW_GUI_EXPANDED);
+	namedWindow("в€љРёСЃС‚РѕРіСЂР°РјРјР° СЂРёРіРёРЅР°Р»", WINDOW_NORMAL | WINDOW_FREERATIO | WINDOW_GUI_EXPANDED);
+	namedWindow("В РІР°РЅС‚РѕРІР°РЅРЅРѕРµ РёР·РѕР±СЂР°Р¶РµРЅРёРµ", WINDOW_NORMAL | WINDOW_FREERATIO | WINDOW_GUI_EXPANDED);
+	namedWindow("в€љРёСЃС‚РѕРіСЂР°РјРјР° РєРІР°РЅС‚РѕРІР°РЅРЅРѕРіРѕ РёР·РѕР±СЂР°Р¶РµРЅРёВ¤", WINDOW_NORMAL | WINDOW_FREERATIO | WINDOW_GUI_EXPANDED);
+	imshow("СњСЂРёРіРёРЅР°Р»", img);
+	imshow("В РІР°РЅС‚РѕРІР°РЅРЅРѕРµ РёР·РѕР±СЂР°Р¶РµРЅРёРµ", q_img);
+	imshow("в€љРёСЃС‚РѕРіСЂР°РјРјР° СЂРёРіРёРЅР°Р»", hist_orig);
+	imshow("в€љРёСЃС‚РѕРіСЂР°РјРјР° РєРІР°РЅС‚РѕРІР°РЅРЅРѕРіРѕ РёР·РѕР±СЂР°Р¶РµРЅРёВ¤", hist_q);
 	waitKey(0);
 	return 0;
 }
