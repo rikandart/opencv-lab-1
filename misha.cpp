@@ -1,3 +1,5 @@
+//#define MISHA
+#ifdef MISHA
 #include <opencv2/core.hpp>
 #include <opencv2/imgcodecs.hpp>
 #include <opencv2/highgui.hpp>
@@ -95,3 +97,4 @@ int main(int argc, char* argv[])
 	waitKey(0);
 	return 0;
 }
+#endif

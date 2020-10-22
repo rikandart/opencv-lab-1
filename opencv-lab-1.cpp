@@ -1,4 +1,4 @@
-﻿#define MISHA
+﻿//#define MISHA
 #ifndef MISHA
 // opencv lib
 #include <opencv2/core.hpp>
@@ -53,7 +53,6 @@ void show(const Mat& original, const Mat& edited, const Mat& hist_orig, const Ma
 double standartDeviation(const Mat& original, const Mat& edited) {
 	const unsigned m = original.rows, n = original.cols;
 	double result = 0;
-	unsigned wh = 0, bl = 0;
 	for (int i = 0; i < m; i++)
 		for (int j = 0; j < n; j++)
 			result += pow(original.at<unsigned char>(i, j)
@@ -125,7 +124,7 @@ int main(int argc, char* argv[])
 {
 	setlocale(LC_ALL, "Russian");
     Mat image, edited_img, hist_orig, hist_edited;
-    image = imread("C:\\Users\\pizhu\\Диск Работа\\2018 фото\\5 разное\\IMG_4432.JPG", IMREAD_GRAYSCALE); // Read the file
+    image = imread("E:\\Диск Работа\\2018 фото\\5 разное\\IMG_4432.JPG", IMREAD_GRAYSCALE); // Read the file
     if( image.empty() ) {
         std::cout << "Could not open or find the image" << std::endl;
     }
