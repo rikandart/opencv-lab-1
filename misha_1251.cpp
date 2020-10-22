@@ -1,3 +1,5 @@
+#define MISHA
+#ifdef MISHA
 #include <opencv2/core.hpp>
 #include <opencv2/imgcodecs.hpp>
 #include <opencv2/highgui.hpp>
@@ -43,7 +45,7 @@ int main(int argc, char* argv[])
 	Mat q_img;
 	Mat hist_orig;
 	Mat hist_q;
-	img = imread("E:\\Диск работа\\2018 фото\\5 разное\\IMG_4432.JPG", IMREAD_GRAYSCALE);
+	img = imread("C:\\Users\\pizhu\\Диск Работа\\2018 фото\\5 разное\\IMG_4432.JPG", IMREAD_GRAYSCALE);
 	int q_level = 0;
 	std::cout << "Введите число уровней квантования: ";
 	std::cin >> q_level;
@@ -73,7 +75,7 @@ int main(int argc, char* argv[])
 			sko += pow(img.at<unsigned char>(i, j) - q_img.at<unsigned char>(i, j), 2);
 		}
 	}
-	sko = sqrt(1 / (img.rows * img.cols) * sko);
+	sko = sqrt(sko / (img.rows * img.cols));
 
 	std::cout << "Уровни: " << q_level << "\nСКО: " << sko <<
 		"\nОценка: " << (255.0 / (q_level - 1)) / sqrt(12.0) << std::endl;
@@ -91,3 +93,4 @@ int main(int argc, char* argv[])
 	waitKey(0);
 	return 0;
 }
+#endif
