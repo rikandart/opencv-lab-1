@@ -45,11 +45,11 @@ int main(int argc, char* argv[])
 	Mat q_img;
 	Mat hist_orig;
 	Mat hist_q;
-	img = imread("C:\\Users\\pizhu\\Диск Работа\\2018 фото\\5 разное\\IMG_4432.JPG", IMREAD_GRAYSCALE);
+	img = imread("E:\\Диск Работа\\2018 фото\\2 живность\\IMG_4462.JPG", IMREAD_GRAYSCALE);
 	int q_level = 0;
 	std::cout << "Введите число уровней квантования: ";
 	std::cin >> q_level;
-	std::cout << std::endl;
+	
 	// квантование
 	q_img = Mat::zeros(img.rows, img.cols, CV_8U);
 	const double inter = 255.0 / (q_level - 1);
@@ -68,16 +68,29 @@ int main(int argc, char* argv[])
 			}
 		}
 	}
-	// расчет ско
+	// расчет среднеквадратического отклонения отсчетов и ско
+	double samp_sko = 0;
+	double srednee = 0;
 	double sko = 0;
+
+	for (int i = 0; i < img.rows; i++) {
+		for (int j = 0; j < img.cols; j++) {
+			srednee += img.at<unsigned char>(i, j);
+		}
+	}
+	srednee /= img.rows * img.cols;
+
 	for (int i = 0; i < img.rows; i++) {
 		for (int j = 0; j < img.cols; j++) {
 			sko += pow(img.at<unsigned char>(i, j) - q_img.at<unsigned char>(i, j), 2);
+			samp_sko += pow(img.at<unsigned char>(i, j) - srednee, 2);
 		}
 	}
-	sko = sqrt(sko / (img.rows * img.cols));
 
-	std::cout << "Уровни: " << q_level << "\nСКО: " << sko <<
+	samp_sko = sqrt(samp_sko / (img.rows * img.cols - 1));
+	sko = sqrt(sko / (img.rows * img.cols));
+		
+	std::cout << "Уровни: " << q_level << "\nСКО отсчетов: " << samp_sko << "\nСКО: " << sko <<
 		"\nОценка: " << (255.0 / (q_level - 1)) / sqrt(12.0) << std::endl;
 
 	hist_orig = getHist(img);
@@ -85,11 +98,11 @@ int main(int argc, char* argv[])
 	namedWindow("Оригинал", WINDOW_NORMAL | WINDOW_FREERATIO | WINDOW_GUI_EXPANDED);
 	namedWindow("Гистограмма ригинал", WINDOW_NORMAL | WINDOW_FREERATIO | WINDOW_GUI_EXPANDED);
 	namedWindow("Квантованное изображение", WINDOW_NORMAL | WINDOW_FREERATIO | WINDOW_GUI_EXPANDED);
-	namedWindow("Гистограмма квантованного изображени¤", WINDOW_NORMAL | WINDOW_FREERATIO | WINDOW_GUI_EXPANDED);
+	namedWindow("Гистограмма квантованного изображения", WINDOW_NORMAL | WINDOW_FREERATIO | WINDOW_GUI_EXPANDED);
 	imshow("Оригинал", img);
 	imshow("Квантованное изображение", q_img);
 	imshow("Гистограмма ригинал", hist_orig);
-	imshow("Гистограмма квантованного изображени¤", hist_q);
+	imshow("Гистограмма квантованного изображения", hist_q);
 	waitKey(0);
 	return 0;
 }
