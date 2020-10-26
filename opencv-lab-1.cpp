@@ -1,4 +1,4 @@
-﻿//#define MISHA
+﻿#define MISHA
 #ifndef MISHA
 // opencv lib
 #include <opencv2/core.hpp>
@@ -58,6 +58,24 @@ double standartDeviation(const Mat& original, const Mat& edited) {
 			result += pow(original.at<unsigned char>(i, j)
 				- edited.at<unsigned char>(i, j), 2);
 	return sqrt(result/(m*n));
+}
+
+double standartSampleDeviation(const Mat& original) {
+	static double result = 0;
+	const unsigned m = original.rows, n = original.cols;
+	static double mean = [&]()->double const {
+		double result = 0;
+		for (int i = 0; i < m; i++)
+			for (int j = 0; j < n; j++)
+				result += original.at<unsigned char>(i, j);
+		return result / (m * n);
+	}();
+	if(!result)
+		for (int i = 0; i < m; i++)
+			for (int j = 0; j < n; j++)
+				result += pow(original.at<unsigned char>(i, j)
+					- mean, 2);
+	return sqrt(result / (m * n - 1));
 }
 
 void editQuantizeLevel(const unsigned level, const Mat& img, Mat& dest_img) {
@@ -127,6 +145,7 @@ int main(int argc, char* argv[])
     image = imread("E:\\Диск Работа\\2018 фото\\5 разное\\IMG_4432.JPG", IMREAD_GRAYSCALE); // Read the file
     if( image.empty() ) {
         std::cout << "Could not open or find the image" << std::endl;
+		return -1;
     }
 	unsigned width = image.cols, height = image.rows;
 	if (image.cols * image.rows > 1024 * 1024) {
@@ -134,6 +153,7 @@ int main(int argc, char* argv[])
 		height /= 10;
 	}
 	int level = 2;
+	const double stSampDev = standartSampleDeviation(image);
 	while (true) {
 		std::cout << "Enter quantize level (-1 to exit): \n\t" << std::endl;
 		std::cin >> level;
@@ -146,7 +166,7 @@ int main(int argc, char* argv[])
 		}
 		editQuantizeLevel(level, image, edited_img);
 		if(!incorrect)
-			std::cout << "Quantize level: " << level << "\nStandart deviation: " << standartDeviation(image, edited_img) << 
+			std::cout << "Quantize level: " << level << "\nStandart sample deviation: " << stSampDev << "\nStandart deviation: " << standartDeviation(image, edited_img) <<
 			"\nEstimated standart deviation: " << (255.0/(level-1))/sqrt(12.0) << std::endl;
 		hist_orig = getHist(image);
 		hist_edited = getHist(edited_img);
