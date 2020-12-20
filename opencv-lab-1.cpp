@@ -142,7 +142,7 @@ int main(int argc, char* argv[])
 {
 	setlocale(LC_ALL, "Russian");
     Mat image, edited_img, hist_orig, hist_edited;
-    image = imread("E:\\Диск Работа\\2018 фото\\5 разное\\IMG_4432.JPG", IMREAD_GRAYSCALE); // Read the file
+    image = imread("E:/Ford_model_t_touring_1.jpg", IMREAD_GRAYSCALE); // Read the file
     if( image.empty() ) {
         std::cout << "Could not open or find the image" << std::endl;
 		return -1;
